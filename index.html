@@ -42,15 +42,8 @@ button {
   padding: 6px 10px;
   background: #eef;
   border-radius: 999px;
-}
-
-.pattern-sub { display:none; }
-.pattern-sub.open { display:flex; flex-wrap:wrap; gap:6px; }
-
-.toggle-link {
-  color:#1f6feb;
-  cursor:pointer;
-  margin-top:6px;
+  margin: 3px;
+  display: inline-block;
 }
 </style>
 </head>
@@ -150,32 +143,23 @@ function calc(){
 
   let groups=[...map.values()];
 
+  // 並び替え（目標に近い順）
+  groups.sort((a,b)=>Math.abs(a.diff)-Math.abs(b.diff));
+
   let html="";
 
-  groups.forEach((g,i)=>{
-
-    const main=g.patterns[0];
-    const rest=g.patterns.slice(1);
+  groups.forEach(g=>{
 
     html+=`
     <div class="group-card">
       <b>最終:${g.final}点</b> / 差:${g.diff}<br>
       勝:${g.win} 連勝:${g.streak} 点:${g.score}<br>
       連勝構成:[${g.blocks.join(",")}]<br><br>
-
-      <span class="pattern-chip">${main}</span>
     `;
 
-    if(rest.length>0){
-      html+=`
-        <div class="toggle-link" onclick="toggle(${i})">
-          残り${rest.length}件
-        </div>
-        <div id="sub-${i}" class="pattern-sub">
-          ${rest.map(p=>`<span class="pattern-chip">${p}</span>`).join("")}
-        </div>
-      `;
-    }
+    g.patterns.forEach(p=>{
+      html+=`<span class="pattern-chip">${p}</span>`;
+    });
 
     html+="</div>";
   });
@@ -183,10 +167,7 @@ function calc(){
   result.innerHTML=html;
 }
 
-function toggle(i){
-  const el=document.getElementById("sub-"+i);
-  el.classList.toggle("open");
-}
+calc();
 
 </script>
 
