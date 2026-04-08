@@ -11,164 +11,416 @@ body {
   max-width: 1000px;
   margin: 16px auto;
   padding: 0 12px 24px;
+  line-height: 1.5;
   background: #f7f7f7;
+  color: #222;
+}
+
+h1 {
+  font-size: 24px;
+  margin-bottom: 16px;
 }
 
 .form-box {
   background: #fff;
-  padding: 16px;
+  border: 1px solid #ddd;
   border-radius: 12px;
+  padding: 16px;
   margin-bottom: 16px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  min-width: 140px;
+  flex: 1;
+}
+
+label {
+  font-weight: bold;
+  margin-bottom: 6px;
+  font-size: 14px;
+}
+
+input, select, button {
+  font-size: 16px;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  box-sizing: border-box;
 }
 
 button {
-  width: 100%;
-  padding: 10px;
+  cursor: pointer;
+  border: none;
   background: #1f6feb;
   color: #fff;
-  border: none;
-  border-radius: 8px;
+  font-weight: bold;
+  width: 100%;
+  margin-top: 8px;
+}
+
+button:active {
+  opacity: 0.9;
+}
+
+.note {
+  color: #666;
+  font-size: 13px;
+  margin-top: 10px;
+}
+
+.summary {
+  margin: 12px 0 16px;
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.group-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .group-card {
   background: #fff;
-  padding: 12px;
+  border: 1px solid #ddd;
   border-radius: 12px;
+  padding: 14px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+.group-card.exact {
+  border: 2px solid #16a34a;
+  background: #f0fff4;
+}
+
+.group-card.near {
+  border: 2px solid #f59e0b;
+  background: #fffaf0;
+}
+
+.group-title {
+  font-weight: bold;
+  font-size: 17px;
+  margin-bottom: 8px;
+}
+
+.meta {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
   margin-bottom: 10px;
+  font-size: 14px;
+}
+
+.badge {
+  display: inline-block;
+  font-size: 12px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  margin-left: 6px;
+  vertical-align: middle;
+  font-weight: bold;
+}
+
+.badge-exact {
+  background: #16a34a;
+  color: #fff;
+}
+
+.badge-near {
+  background: #f59e0b;
+  color: #fff;
+}
+
+.patterns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
 }
 
 .pattern-chip {
-  font-family: monospace;
-  padding: 6px 10px;
-  background: #eef;
+  background: #eef2ff;
+  border: 1px solid #c7d2fe;
   border-radius: 999px;
-  margin: 3px;
-  display: inline-block;
+  padding: 6px 10px;
+  font-family: monospace;
+  font-size: 15px;
+  white-space: nowrap;
+}
+
+.empty {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.toggle-wrap {
+  margin-top: 12px;
+}
+
+.toggle-button {
+  background: #6b7280;
+}
+
+.toggle-button:hover {
+  opacity: 0.95;
+}
+
+.hidden {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  h1 {
+    font-size: 22px;
+  }
+
+  .meta {
+    grid-template-columns: 1fr;
+  }
+
+  .pattern-chip {
+    font-size: 14px;
+  }
 }
 </style>
 </head>
-
 <body>
 
-<h2>星取表シミュレーター</h2>
+<h1>星取表シミュレーター</h1>
 
 <div class="form-box">
-現在得点 <input id="currentScore" type="number" value="50"><br>
-目標得点 <input id="targetScore" type="number" value="80"><br>
-残り試合 <input id="remainingGames" type="number" value="5"><br>
+  <div class="row">
+    <div class="field">
+      <label for="currentScore">現在得点</label>
+      <input type="number" id="currentScore" value="50">
+    </div>
 
-直近の勝敗
-<select id="lastResult">
-  <option value="win">勝ち</option>
-  <option value="lose">負け</option>
-</select>
+    <div class="field">
+      <label for="targetScore">目標最終得点</label>
+      <input type="number" id="targetScore" value="80">
+    </div>
 
-<br><br>
-<button onclick="calc()">計算</button>
+    <div class="field">
+      <label for="remainingGames">残り試合数</label>
+      <select id="remainingGames">
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+        <option value="6">6</option>
+        <option value="7">7</option>
+        <option value="8">8</option>
+        <option value="9" selected>9</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label for="lastResult">直近の勝敗結果</label>
+      <select id="lastResult">
+        <option value="none">なし</option>
+        <option value="win">勝ち</option>
+        <option value="lose" selected>負け</option>
+      </select>
+    </div>
+  </div>
+
+  <button onclick="calculatePatterns()">計算する</button>
+
+  <div class="note">
+    ※ 1億点ボーナスは毎試合獲得前提で計算しています。<br>
+    ※ 連勝ボーナスは勝ちが連続したつながりごとに +2 です。<br>
+    ※ 同じ勝数・同じ連勝ボーナスの並び違いは1グループにまとめて表示します。
+  </div>
 </div>
 
+<div id="summary" class="summary"></div>
 <div id="result"></div>
 
 <script>
+function calculatePatterns() {
+  const currentScore = Number(document.getElementById("currentScore").value);
+  const targetScore = Number(document.getElementById("targetScore").value);
+  const remainingGames = Number(document.getElementById("remainingGames").value);
+  const lastResult = document.getElementById("lastResult").value;
 
-function getStreakBlocks(arr){
-  let blocks = [];
-  let count = 0;
+  const totalPatterns = Math.pow(2, remainingGames);
+  const groupedMap = new Map();
 
-  for(let i=0;i<arr.length;i++){
-    if(arr[i] === "○"){
-      count++;
-    }else{
-      if(count>0) blocks.push(count);
-      count = 0;
-    }
-  }
-  if(count>0) blocks.push(count);
+  for (let mask = 0; mask < totalPatterns; mask++) {
+    const results = [];
 
-  return blocks;
-}
-
-function calc(){
-
-  const current = Number(currentScore.value);
-  const target = Number(targetScore.value);
-  const n = Number(remainingGames.value);
-  const last = lastResult.value === "win";
-
-  const map = new Map();
-
-  for(let mask=0; mask<(1<<n); mask++){
-
-    let arr=[];
-    for(let i=n-1;i>=0;i--){
-      arr.push((mask&(1<<i))?"○":"×");
+    for (let i = remainingGames - 1; i >= 0; i--) {
+      const isWin = (mask & (1 << i)) !== 0;
+      results.push(isWin ? "○" : "×");
     }
 
-    let prev = last;
-    let score=0, win=0, streak=0;
+    let gainedScore = 0;
+    let winCount = 0;
+    let streakBonus = 0;
+    let prevWin = (lastResult === "win");
 
-    for(let r of arr){
-      if(r==="○"){
-        score+=4;
-        win++;
-        if(prev){
-          score+=2;
-          streak+=2;
+    for (let i = 0; i < results.length; i++) {
+      const isWin = results[i] === "○";
+
+      if (isWin) {
+        gainedScore += 4;
+        winCount++;
+
+        if (prevWin) {
+          gainedScore += 2;
+          streakBonus += 2;
         }
-        prev=true;
-      }else{
-        prev=false;
       }
+
+      prevWin = isWin;
     }
 
-    let final = current+score;
-    let diff = final-target;
+    const finalScore = currentScore + gainedScore;
+    const diff = finalScore - targetScore;
 
-    if(Math.abs(diff)<=3){
+    if (Math.abs(diff) <= 3) {
+      const key = `${winCount}_${streakBonus}`;
+      const patternText = results.join("");
 
-      const blocks = getStreakBlocks(arr);
-      const key = `${win}_${streak}_${score}_${blocks.join("-")}`;
-
-      if(!map.has(key)){
-        map.set(key,{
-          win,streak,score,final,diff,
-          blocks,
-          patterns:[]
+      if (!groupedMap.has(key)) {
+        groupedMap.set(key, {
+          winCount,
+          streakBonus,
+          gainedScore,
+          finalScore,
+          diff,
+          patterns: []
         });
       }
 
-      map.get(key).patterns.push(arr.join(""));
+      groupedMap.get(key).patterns.push(patternText);
     }
   }
 
-  let groups=[...map.values()];
+  const groups = Array.from(groupedMap.values());
 
-  // 並び替え（目標に近い順）
-  groups.sort((a,b)=>Math.abs(a.diff)-Math.abs(b.diff));
+  groups.sort((a, b) => {
+    const diffA = Math.abs(a.diff);
+    const diffB = Math.abs(b.diff);
 
-  let html="";
-
-  groups.forEach(g=>{
-
-    html+=`
-    <div class="group-card">
-      <b>最終:${g.final}点</b> / 差:${g.diff}<br>
-      勝:${g.win} 連勝:${g.streak} 点:${g.score}<br>
-      連勝構成:[${g.blocks.join(",")}]<br><br>
-    `;
-
-    g.patterns.forEach(p=>{
-      html+=`<span class="pattern-chip">${p}</span>`;
-    });
-
-    html+="</div>";
+    if (diffA !== diffB) return diffA - diffB;
+    if (a.winCount !== b.winCount) return a.winCount - b.winCount;
+    if (a.streakBonus !== b.streakBonus) return a.streakBonus - b.streakBonus;
+    return a.patterns.length - b.patterns.length;
   });
 
-  result.innerHTML=html;
+  document.getElementById("summary").textContent =
+    `該当グループ: ${groups.length}件`;
+
+  if (groups.length === 0) {
+    document.getElementById("result").innerHTML =
+      '<div class="empty">目標得点 ±3点 に入る組み合わせはありません。</div>';
+    return;
+  }
+
+  let html = '<div class="group-list">';
+
+  for (let index = 0; index < groups.length; index++) {
+    const group = groups[index];
+    const absDiff = Math.abs(group.diff);
+    const diffText = group.diff > 0 ? `+${group.diff}` : `${group.diff}`;
+
+    let cardClass = "group-card";
+    let badgeHtml = "";
+
+    if (group.diff === 0) {
+      cardClass += " exact";
+      badgeHtml = '<span class="badge badge-exact">ピッタリ</span>';
+    } else if (absDiff <= 1) {
+      cardClass += " near";
+      badgeHtml = '<span class="badge badge-near">おしい</span>';
+    }
+
+    const patternHtml = group.patterns
+      .sort()
+      .map(p => `<span class="pattern-chip">${p}</span>`)
+      .join("");
+
+    const hiddenClass = index === 0 ? "" : " hidden";
+
+    html += `
+      <div class="${cardClass}${hiddenClass}" data-group-card>
+        <div class="group-title">
+          最終得点: ${group.finalScore}点
+          ${badgeHtml}
+        </div>
+
+        <div class="meta">
+          <div>目標との差: <strong>${diffText}</strong></div>
+          <div>残り試合の獲得点: <strong>${group.gainedScore}</strong></div>
+          <div>勝数: <strong>${group.winCount}</strong></div>
+          <div>連勝ボーナス: <strong>${group.streakBonus}</strong></div>
+          <div>パターン数: <strong>${group.patterns.length}</strong></div>
+        </div>
+
+        <div class="patterns">
+          ${patternHtml}
+        </div>
+      </div>
+    `;
+  }
+
+  if (groups.length > 1) {
+    html += `
+      <div class="toggle-wrap">
+        <button id="toggleButton" class="toggle-button" onclick="toggleGroups()">
+          残りのグループを表示
+        </button>
+      </div>
+    `;
+  }
+
+  html += '</div>';
+  document.getElementById("result").innerHTML = html;
 }
 
-calc();
+function toggleGroups() {
+  const cards = document.querySelectorAll('[data-group-card]');
+  const button = document.getElementById('toggleButton');
 
+  if (!button || cards.length <= 1) return;
+
+  let hiddenExists = false;
+
+  for (let i = 1; i < cards.length; i++) {
+    if (cards[i].classList.contains('hidden')) {
+      hiddenExists = true;
+      break;
+    }
+  }
+
+  for (let i = 1; i < cards.length; i++) {
+    if (hiddenExists) {
+      cards[i].classList.remove('hidden');
+    } else {
+      cards[i].classList.add('hidden');
+    }
+  }
+
+  button.textContent = hiddenExists
+    ? '残りのグループを閉じる'
+    : '残りのグループを表示';
+}
+
+calculatePatterns();
 </script>
 
 </body>
