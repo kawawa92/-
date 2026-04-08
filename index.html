@@ -142,11 +142,26 @@ button:active {
   color: #fff;
 }
 
-.patterns {
+.pattern-area {
+  margin-top: 10px;
+}
+
+.pattern-main {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  margin-bottom: 8px;
+}
+
+.pattern-sub {
+  display: none;
+  flex-wrap: wrap;
+  gap: 8px;
   margin-top: 8px;
+}
+
+.pattern-sub.open {
+  display: flex;
 }
 
 .pattern-chip {
@@ -159,27 +174,27 @@ button:active {
   white-space: nowrap;
 }
 
+.pattern-chip.main-chip {
+  background: #dbeafe;
+  border-color: #93c5fd;
+  font-weight: bold;
+}
+
+.toggle-link {
+  display: inline-block;
+  margin-top: 6px;
+  color: #1f6feb;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  user-select: none;
+}
+
 .empty {
   background: #fff;
   border: 1px solid #ddd;
   border-radius: 12px;
   padding: 16px;
-}
-
-.toggle-wrap {
-  margin-top: 12px;
-}
-
-.toggle-button {
-  background: #6b7280;
-}
-
-.toggle-button:hover {
-  opacity: 0.95;
-}
-
-.hidden {
-  display: none;
 }
 
 @media (max-width: 640px) {
@@ -230,7 +245,6 @@ button:active {
     <div class="field">
       <label for="lastResult">直近の勝敗結果</label>
       <select id="lastResult">
-        <option value="none">なし</option>
         <option value="win">勝ち</option>
         <option value="lose" selected>負け</option>
       </select>
@@ -242,7 +256,7 @@ button:active {
   <div class="note">
     ※ 1億点ボーナスは毎試合獲得前提で計算しています。<br>
     ※ 連勝ボーナスは勝ちが連続したつながりごとに +2 です。<br>
-    ※ 同じ勝数・同じ連勝ボーナスの並び違いは1グループにまとめて表示します。
+    ※ 同じ勝ち数・同じ連勝数の並び違いは1グループにまとめています。
   </div>
 </div>
 
@@ -264,7 +278,7 @@ function calculatePatterns() {
 
     for (let i = remainingGames - 1; i >= 0; i--) {
       const isWin = (mask & (1 << i)) !== 0;
-      results.push(isWin ? "○" : "×");
+      results.push(isWin ? "勝" : "負");
     }
 
     let gainedScore = 0;
@@ -273,7 +287,7 @@ function calculatePatterns() {
     let prevWin = (lastResult === "win");
 
     for (let i = 0; i < results.length; i++) {
-      const isWin = results[i] === "○";
+      const isWin = results[i] === "勝";
 
       if (isWin) {
         gainedScore += 4;
@@ -312,6 +326,10 @@ function calculatePatterns() {
 
   const groups = Array.from(groupedMap.values());
 
+  groups.forEach(group => {
+    group.patterns.sort();
+  });
+
   groups.sort((a, b) => {
     const diffA = Math.abs(a.diff);
     const diffB = Math.abs(b.diff);
@@ -349,15 +367,26 @@ function calculatePatterns() {
       badgeHtml = '<span class="badge badge-near">おしい</span>';
     }
 
-    const patternHtml = group.patterns
-      .sort()
+    const mainPattern = group.patterns[0];
+    const restPatterns = group.patterns.slice(1);
+
+    const restHtml = restPatterns
       .map(p => `<span class="pattern-chip">${p}</span>`)
       .join("");
 
-    const hiddenClass = index === 0 ? "" : " hidden";
+    const toggleHtml = restPatterns.length > 0
+      ? `
+        <div class="toggle-link" onclick="togglePatterns(${index})" id="toggle-${index}">
+          残り${restPatterns.length}件を表示
+        </div>
+        <div class="pattern-sub" id="patterns-${index}">
+          ${restHtml}
+        </div>
+      `
+      : '';
 
     html += `
-      <div class="${cardClass}${hiddenClass}" data-group-card>
+      <div class="${cardClass}">
         <div class="group-title">
           最終得点: ${group.finalScore}点
           ${badgeHtml}
@@ -366,24 +395,17 @@ function calculatePatterns() {
         <div class="meta">
           <div>目標との差: <strong>${diffText}</strong></div>
           <div>残り試合の獲得点: <strong>${group.gainedScore}</strong></div>
-          <div>勝数: <strong>${group.winCount}</strong></div>
+          <div>勝ち数: <strong>${group.winCount}</strong></div>
           <div>連勝ボーナス: <strong>${group.streakBonus}</strong></div>
-          <div>パターン数: <strong>${group.patterns.length}</strong></div>
+          <div>グループ件数: <strong>${group.patterns.length}</strong></div>
         </div>
 
-        <div class="patterns">
-          ${patternHtml}
+        <div class="pattern-area">
+          <div class="pattern-main">
+            <span class="pattern-chip main-chip">${mainPattern}</span>
+          </div>
+          ${toggleHtml}
         </div>
-      </div>
-    `;
-  }
-
-  if (groups.length > 1) {
-    html += `
-      <div class="toggle-wrap">
-        <button id="toggleButton" class="toggle-button" onclick="toggleGroups()">
-          残りのグループを表示
-        </button>
       </div>
     `;
   }
@@ -392,32 +414,22 @@ function calculatePatterns() {
   document.getElementById("result").innerHTML = html;
 }
 
-function toggleGroups() {
-  const cards = document.querySelectorAll('[data-group-card]');
-  const button = document.getElementById('toggleButton');
+function togglePatterns(index) {
+  const area = document.getElementById(`patterns-${index}`);
+  const toggle = document.getElementById(`toggle-${index}`);
 
-  if (!button || cards.length <= 1) return;
+  if (!area || !toggle) return;
 
-  let hiddenExists = false;
+  const isOpen = area.classList.contains('open');
 
-  for (let i = 1; i < cards.length; i++) {
-    if (cards[i].classList.contains('hidden')) {
-      hiddenExists = true;
-      break;
-    }
+  if (isOpen) {
+    area.classList.remove('open');
+    const hiddenCount = area.children.length;
+    toggle.textContent = `残り${hiddenCount}件を表示`;
+  } else {
+    area.classList.add('open');
+    toggle.textContent = '閉じる';
   }
-
-  for (let i = 1; i < cards.length; i++) {
-    if (hiddenExists) {
-      cards[i].classList.remove('hidden');
-    } else {
-      cards[i].classList.add('hidden');
-    }
-  }
-
-  button.textContent = hiddenExists
-    ? '残りのグループを閉じる'
-    : '残りのグループを表示';
 }
 
 calculatePatterns();
