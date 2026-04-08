@@ -255,8 +255,9 @@ button:active {
 
   <div class="note">
     ※ 1億点ボーナスは毎試合獲得前提で計算しています。<br>
+    ※ 勝ち = 4点（勝ち点3 + 1億点ボーナス1）です。<br>
     ※ 連勝ボーナスは勝ちが連続したつながりごとに +2 です。<br>
-    ※ 同じ勝ち数・同じ連勝数の並び違いは1グループにまとめています。
+    ※ グループ化条件は「勝ち数・連勝ボーナス・獲得ポイント」が同じものです。
   </div>
 </div>
 
@@ -287,7 +288,7 @@ function calculatePatterns() {
     let prevWin = (lastResult === "win");
 
     for (let i = 0; i < results.length; i++) {
-      const isWin = results[i] === "勝";
+      const isWin = results[i] === "○";
 
       if (isWin) {
         gainedScore += 4;
@@ -306,8 +307,8 @@ function calculatePatterns() {
     const diff = finalScore - targetScore;
 
     if (Math.abs(diff) <= 3) {
-      const key = `${winCount}_${streakBonus}`;
       const patternText = results.join("");
+      const key = `${winCount}_${streakBonus}_${gainedScore}`;
 
       if (!groupedMap.has(key)) {
         groupedMap.set(key, {
@@ -335,6 +336,7 @@ function calculatePatterns() {
     const diffB = Math.abs(b.diff);
 
     if (diffA !== diffB) return diffA - diffB;
+    if (a.gainedScore !== b.gainedScore) return b.gainedScore - a.gainedScore;
     if (a.winCount !== b.winCount) return a.winCount - b.winCount;
     if (a.streakBonus !== b.streakBonus) return a.streakBonus - b.streakBonus;
     return a.patterns.length - b.patterns.length;
@@ -394,7 +396,7 @@ function calculatePatterns() {
 
         <div class="meta">
           <div>目標との差: <strong>${diffText}</strong></div>
-          <div>残り試合の獲得点: <strong>${group.gainedScore}</strong></div>
+          <div>残り試合の獲得ポイント: <strong>${group.gainedScore}</strong></div>
           <div>勝ち数: <strong>${group.winCount}</strong></div>
           <div>連勝ボーナス: <strong>${group.streakBonus}</strong></div>
           <div>グループ件数: <strong>${group.patterns.length}</strong></div>
