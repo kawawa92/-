@@ -278,7 +278,7 @@ function calculatePatterns() {
 
     for (let i = remainingGames - 1; i >= 0; i--) {
       const isWin = (mask & (1 << i)) !== 0;
-      results.push(isWin ? "勝" : "負");
+      results.push(isWin ? "○" : "×");
     }
 
     let gainedScore = 0;
